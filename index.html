@@ -1,0 +1,1038 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Assessing the Renal Patient</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+html,body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+/* Layout: a single reading column with a sticky "dipstick" stepper; one step visible at a time, each step = read, then do. Light theme only by request. */
+:root{
+  color-scheme: light;
+  --paper:#FFFFFF;
+  --card:#FFFFFF;
+  --ink:#13233A;
+  --ink-2:#4A5B72;
+  --line:#D8E2EE;
+  --wash:#F0F5FB;
+  --accent:#1D4E9E;        /* clinical blue */
+  --accent-wash:#E8F0FB;
+  --amber:#3B82C4;         /* bright blue for focus */
+  --amber-wash:#FFF6D6;
+  --pearl:#EAF3FC; --pearl-line:#BCD6EF;
+  --teal:#0E6A9C;
+  --teal-wash:#E4F2FA;
+  --ok:#2F7D4E; --ok-wash:#E4F2E9;
+  --warn:#A86210; --warn-wash:#FCEEDB;
+  --bad:#B23A32; --bad-wash:#FBE6E4;
+  --r-green:#3F8F5A; --r-yellow:#E6C44E; --r-orange:#E28B3B; --r-red:#C2453D; --r-deep:#8E2A24;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Source Sans 3", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px;
+  --radius:10px;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:var(--teal);text-underline-offset:2px}
+a:hover{color:var(--accent)}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:4px}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0;color:var(--ink)}
+h1{font-size:clamp(1.9rem,6vw,2.8rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:clamp(1.5rem,4.6vw,2rem);font-weight:800;letter-spacing:-.015em}
+h3{font-size:1.2rem;font-weight:700}
+h4{font-size:1.02rem;font-weight:700}
+p{margin:0}
+ul,ol{margin:0;padding-left:1.25em}
+li+li{margin-top:4px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--accent);font-weight:500}
+.muted{color:var(--ink-2)}
+small,.small{font-size:.88rem}
+
+/* ---------- header / dipstick stepper ---------- */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-inner{max-width:880px;margin:0 auto;padding:10px 16px 8px;display:flex;flex-direction:column;gap:8px}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-family:var(--f-display);font-weight:700;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.brand span{color:var(--accent)}
+.count{font-family:var(--f-mono);font-size:.8rem;color:var(--ink-2);white-space:nowrap}
+.strip-wrap{overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.strip-wrap::-webkit-scrollbar{display:none}
+.strip{display:flex;align-items:stretch;gap:0;background:var(--wash);border:1px solid var(--line);border-radius:6px;padding:4px;min-width:max-content}
+.strip::before{content:"";width:22px;flex:none;border-radius:3px 0 0 3px;background:repeating-linear-gradient(90deg,#D3DFEE 0 2px,transparent 2px 5px)}
+.pad{appearance:none;border:0;background:transparent;font:inherit;cursor:pointer;display:flex;align-items:center;gap:7px;padding:4px 10px 4px 6px;border-radius:5px;color:var(--ink-2);font-size:.82rem;font-weight:600;white-space:nowrap}
+.pad i{display:block;width:18px;height:18px;border-radius:3px;background:#FFFFFF;border:1px solid #C9D6E6;flex:none;transition:background .4s ease,border-color .4s ease}
+.pad[aria-current="step"]{background:var(--card);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.pad[aria-current="step"] i{border-color:var(--ink)}
+.pad.done i{border-color:transparent}
+.pad.done[data-c="0"] i{background:#E9D9A0}
+.pad.done[data-c="1"] i{background:#C9A64B}
+.pad.done[data-c="2"] i{background:#7FA36A}
+.pad.done[data-c="3"] i{background:#3F7F6A}
+.pad.done[data-c="4"] i{background:#5B6FA3}
+.pad.done[data-c="5"] i{background:#8C5A8F}
+.pad.done[data-c="6"] i{background:#8A2C3B}
+.bar{height:3px;background:var(--wash);border-radius:2px;overflow:hidden}
+.bar b{display:block;height:100%;background:var(--accent);width:0;transition:width .35s ease}
+
+/* ---------- page ---------- */
+main{max-width:880px;margin:0 auto;padding:0 16px;padding-block:28px 64px}
+.step{display:flex;flex-direction:column;gap:var(--s5)}
+.step-head{display:flex;flex-direction:column;gap:10px}
+.lede{font-size:1.1rem;color:var(--ink-2);max-width:62ch}
+.prose{display:flex;flex-direction:column;gap:12px;max-width:68ch}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:var(--s4)}
+@media(min-width:640px){.panel{padding:var(--s5)}}
+.panel>*+*{margin-top:12px}
+.panel h3+p,.panel h3+ul{margin-top:8px}
+.grid2{display:grid;gap:var(--s4);grid-template-columns:1fr}
+@media(min-width:680px){.grid2{grid-template-columns:1fr 1fr}}
+.grid2>*{min-width:0}
+.callout{border-radius:8px;padding:12px 14px;font-size:.96rem;display:flex;flex-direction:column;gap:6px}
+.callout strong:first-child{font-family:var(--f-display)}
+.callout.pearl{background:var(--pearl);border:1px solid var(--pearl-line)}
+.callout.red{background:var(--bad-wash);border:1px solid #EFC2BD}
+.callout.info{background:var(--teal-wash);border:1px solid #BEDCEC}
+.callout.uk{background:var(--wash);border:1px solid var(--line)}
+.tag{display:inline-block;font-family:var(--f-mono);font-size:.72rem;letter-spacing:.04em;padding:2px 7px;border-radius:4px;background:var(--wash);color:var(--ink-2);vertical-align:middle}
+.tag.nice{background:var(--teal-wash);color:var(--teal)}
+.tag.kdigo{background:var(--accent-wash);color:var(--accent)}
+.tag.ukka{background:var(--pearl);color:#2A5F94}
+
+/* objectives */
+.objectives{counter-reset:o;list-style:none;padding:0;display:flex;flex-direction:column;gap:10px}
+.objectives li{counter-increment:o;display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:baseline;margin:0}
+.objectives li::before{content:counter(o);font-family:var(--f-mono);font-size:.8rem;color:var(--accent);border:1px solid var(--accent);border-radius:50%;width:24px;height:24px;display:grid;place-items:center}
+.route{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.route button{appearance:none;font:inherit;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px;cursor:pointer;display:flex;flex-direction:column;gap:4px;color:var(--ink)}
+.route button:hover{border-color:var(--accent)}
+.route b{font-family:var(--f-display);font-size:1rem}
+.route span{font-size:.85rem;color:var(--ink-2)}
+
+/* details accordions */
+details.acc{background:var(--card);border:1px solid var(--line);border-radius:8px}
+details.acc+details.acc{margin-top:8px}
+details.acc summary{cursor:pointer;list-style:none;padding:12px 14px;display:flex;justify-content:space-between;gap:12px;align-items:center;font-weight:700}
+details.acc summary::-webkit-details-marker{display:none}
+details.acc summary::after{content:"+";font-family:var(--f-mono);font-size:1.1rem;color:var(--accent);flex:none}
+details.acc[open] summary::after{content:"–"}
+details.acc summary small{display:block;font-weight:400;color:var(--ink-2)}
+details.acc .acc-body{padding:0 14px 14px;display:flex;flex-direction:column;gap:10px;font-size:.97rem}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+th,td{padding:9px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font-family:var(--f-mono);font-weight:500;font-size:.76rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2);background:var(--wash)}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* buttons & forms */
+.btn{appearance:none;font:inherit;font-weight:600;border-radius:8px;padding:10px 16px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff;display:inline-flex;align-items:center;gap:8px;min-height:44px}
+.btn:hover{background:var(--accent)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:.85rem;font-weight:600;color:var(--ink-2)}
+.field input,.field select{font:inherit;font-family:var(--f-mono);font-size:1rem;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);width:100%;min-height:44px}
+.field select{font-family:var(--f-body)}
+.fields{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+
+/* step footer */
+.step-nav{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-top:var(--s4);border-top:1px solid var(--line)}
+
+/* drug chart */
+.chart{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--card)}
+.chart-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--line)}
+.chart-row:last-child{border-bottom:0}
+.chart-row .dname{font-weight:700}
+.chart-row .ddose{font-family:var(--f-mono);font-size:.82rem;color:var(--ink-2)}
+.toggle{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;flex:none}
+.toggle button{appearance:none;font:inherit;font-size:.84rem;font-weight:600;border:0;background:var(--card);color:var(--ink-2);padding:8px 10px;cursor:pointer;min-height:40px}
+.toggle button+button{border-left:1px solid var(--line)}
+.toggle button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.chart-row .why{grid-column:1/-1;font-size:.9rem;border-radius:6px;padding:8px 10px}
+.why.right{background:var(--ok-wash)}
+.why.wrong{background:var(--bad-wash)}
+
+/* calc result */
+.result{border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);background:var(--wash)}
+.result .big{font-family:var(--f-display);font-weight:800;font-size:1.5rem}
+.result.s0{background:var(--ok-wash);border-color:#BFDCC9}
+.result.s1{background:var(--amber-wash);border-color:#EBD98E}
+.result.s2{background:var(--warn-wash);border-color:#F0CC9F}
+.result.s3{background:var(--bad-wash);border-color:#EFC2BD}
+
+/* heatmap */
+.heat{display:grid;grid-template-columns:auto repeat(3,1fr);gap:4px;font-size:.82rem}
+.heat .hdr{font-family:var(--f-mono);font-size:.72rem;color:var(--ink-2);padding:4px;display:flex;flex-direction:column;justify-content:flex-end}
+.heat .rowh{font-family:var(--f-mono);font-size:.74rem;padding:6px 8px 6px 0;display:flex;flex-direction:column;justify-content:center;white-space:nowrap}
+.heat button{appearance:none;border:2px solid transparent;border-radius:6px;min-height:42px;cursor:pointer;font:inherit;font-family:var(--f-mono);font-size:.75rem;font-weight:500}
+.heat button[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 0 0 2px var(--card) inset}
+.c-g{background:var(--r-green);color:#fff}.c-y{background:var(--r-yellow);color:var(--ink)}.c-o{background:var(--r-orange);color:var(--ink)}.c-r{background:var(--r-red);color:#fff}.c-d{background:var(--r-deep);color:#fff}
+
+/* volume sorter */
+.sorter{display:flex;flex-direction:column;gap:10px}
+.sort-item{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.sort-item .finding{font-weight:700}
+.choices{display:flex;flex-wrap:wrap;gap:6px}
+.choices button{appearance:none;font:inherit;font-size:.86rem;font-weight:600;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;min-height:40px}
+.choices button:hover{border-color:var(--ink)}
+.choices button.picked.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.choices button.picked.no{background:var(--bad);border-color:var(--bad);color:#fff}
+.choices button.answer{border-color:var(--ok);border-width:2px}
+.fb{font-size:.92rem;padding:8px 10px;border-radius:6px}
+.fb.ok{background:var(--ok-wash)}.fb.no{background:var(--bad-wash)}
+.score{font-family:var(--f-mono);font-size:.9rem}
+
+/* dipstick explorer */
+.dip{display:grid;gap:var(--s4);grid-template-columns:1fr}
+@media(min-width:700px){.dip{grid-template-columns:200px 1fr}}
+.dip>*{min-width:0}
+.stick{display:flex;flex-direction:row;gap:6px;overflow-x:auto;padding:10px;background:var(--wash);border:1px solid var(--line);border-radius:8px}
+@media(min-width:700px){.stick{flex-direction:column;overflow:visible}}
+.stick button{appearance:none;font:inherit;display:flex;align-items:center;gap:10px;background:transparent;border:1px solid transparent;border-radius:6px;padding:6px 8px;cursor:pointer;flex:none;color:var(--ink);font-size:.88rem;font-weight:600;text-align:left}
+.stick button i{width:22px;height:22px;border-radius:3px;flex:none;border:1px solid rgba(0,0,0,.08)}
+.stick button[aria-pressed="true"]{background:var(--card);border-color:var(--ink)}
+.dip-card{display:flex;flex-direction:column;gap:10px}
+.dip-card dl{margin:0;display:grid;grid-template-columns:1fr;gap:10px}
+.dip-card dt{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.dip-card dd{margin:2px 0 0}
+
+/* referral tool */
+.checks{display:flex;flex-direction:column;gap:14px}
+.checks fieldset{border:1px solid var(--line);border-radius:8px;padding:10px 12px 12px;margin:0;background:var(--card)}
+.checks legend{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);padding:0 6px}
+.check{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:6px 0;font-size:.95rem;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--accent)}
+.out{display:flex;flex-direction:column;gap:10px}
+.lane{border-radius:8px;padding:12px 14px;border:1px solid var(--line);background:var(--card);display:flex;flex-direction:column;gap:6px}
+.lane h4{display:flex;align-items:center;gap:8px}
+.lane h4 i{width:10px;height:10px;border-radius:50%;flex:none}
+.lane.now{border-color:#EFC2BD;background:var(--bad-wash)} .lane.now i{background:var(--bad)}
+.lane.uro{border-color:#F0CC9F;background:var(--warn-wash)} .lane.uro i{background:var(--warn)}
+.lane.op{border-color:#BEDCEC;background:var(--teal-wash)} .lane.op i{background:var(--teal)}
+.lane.none i{background:var(--ok)}
+.lane ul{font-size:.93rem}
+
+/* cases */
+.case{display:flex;flex-direction:column;gap:12px}
+.vignette{background:var(--wash);border-radius:8px;padding:12px 14px;font-size:.97rem}
+.vignette .mono{font-size:.88rem}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opts button{appearance:none;font:inherit;text-align:left;padding:12px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;display:grid;grid-template-columns:auto 1fr;gap:10px;min-height:44px}
+.opts button b{font-family:var(--f-mono);font-weight:500;color:var(--ink-2)}
+.opts button:hover:not([disabled]){border-color:var(--ink)}
+.opts button.ok{background:var(--ok-wash);border-color:var(--ok)}
+.opts button.no{background:var(--bad-wash);border-color:var(--bad)}
+.opts button[disabled]{cursor:default}
+.explain{font-size:.95rem;background:var(--card);border-left:3px solid var(--teal);padding:10px 12px;border-radius:0 6px 6px 0}
+
+.casts{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.casts div{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:.92rem}
+.casts b{display:block;font-family:var(--f-display)}
+
+.refs{font-size:.92rem;display:flex;flex-direction:column;gap:8px;padding-left:1.1em}
+footer{max-width:880px;margin:0 auto;padding:0 16px;padding-block:0 40px;font-size:.84rem;color:var(--ink-2)}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="top-row">
+      <div class="brand">Assessing the <span>Renal</span> Patient</div>
+      <div class="count" id="count">Step 1 of 7</div>
+    </div>
+    <div class="strip-wrap" id="stripWrap">
+      <nav class="strip" id="strip" aria-label="Steps"></nav>
+    </div>
+    <div class="bar" aria-hidden="true"><b id="barFill"></b></div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ================= STEP 0: START ================= -->
+<section class="step" data-step="start" data-label="Start">
+  <div class="step-head">
+    <span class="eyebrow">Nephrology teaching · pre-reading</span>
+    <h1>Assessing the renal patient</h1>
+    <p class="lede">History, bloods, volume status, urinalysis and when to pick up the phone. Work through the six steps before the session; each one has a short read and something to try. Allow about 45 minutes.</p>
+  </div>
+
+  <div class="panel">
+    <h3>By the end you should be able to</h3>
+    <ol class="objectives">
+      <li>Take a focused history that sorts a creatinine rise into pre-renal, intrinsic and post-renal causes, and audit the drug chart.</li>
+      <li>Stage AKI with KDIGO/NICE criteria and classify CKD by eGFR (G) and albumin:creatinine ratio (A).</li>
+      <li>Assess volume status at the bedside without relying on any single sign.</li>
+      <li>Read a urine dipstick, know its blind spots, and know when to send ACR, PCR or microscopy.</li>
+      <li>Decide who needs a same-day renal call, urology, or a routine outpatient referral, and hand over in a way the renal registrar can act on.</li>
+    </ol>
+  </div>
+
+  <div class="callout uk">
+    <strong>Based on:</strong>
+    <ul>
+      <li>NICE NG148: Acute kidney injury</li>
+      <li>NICE NG203: Chronic kidney disease</li>
+      <li>NICE CG174: IV fluid therapy in hospital</li>
+      <li>NICE NG12: Suspected cancer (haematuria)</li>
+      <li>KDIGO 2024 CKD guideline</li>
+      <li>KDIGO 2012 AKI guideline</li>
+      <li>UK Kidney Association guidance</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h3>Jump to a step</h3>
+    <div class="route" id="route"></div>
+  </div>
+
+  <div class="step-nav">
+    <span></span>
+    <button class="btn" data-next>Start with the history →</button>
+  </div>
+</section>
+
+<!-- ================= STEP 1: HISTORY ================= -->
+<section class="step" data-step="history" data-label="History" hidden>
+  <div class="step-head">
+    <span class="eyebrow">Step 1 of 6</span>
+    <h2>The history: three questions before anything else</h2>
+    <p class="lede">A raised creatinine is a finding, not a diagnosis. Your history should answer three things: is this acute, chronic, or acute-on-chronic? Where is the problem (before, in, or after the kidney)? And what in the drug chart is making it worse?</p>
+  </div>
+
+  <div class="panel">
+    <h3>1 · Find the baseline first</h3>
+    <p>Before you take the history, find previous creatinine results: hospital lab system, GP record or Summary Care Record, old discharge letters. Without a baseline you cannot stage AKI or tell it apart from CKD.</p>
+    <div class="callout pearl">
+      <strong>Clues that a raised creatinine is chronic</strong>
+      <span>Previous abnormal results, normocytic anaemia, raised phosphate and PTH, small kidneys (&lt;9 cm) or thinned cortex on ultrasound, and long-standing diabetes or hypertension. Large kidneys with CKD: think polycystic kidney disease, diabetes, amyloid, or myeloma.</span>
+    </div>
+  </div>
+
+  <div>
+    <h3 style="margin-bottom:10px">2 · Localise the problem</h3>
+    <details class="acc" open>
+      <summary><span>Pre-renal: poor perfusion<small>The commonest cause of AKI on the wards</small></span></summary>
+      <div class="acc-body">
+        <ul>
+          <li>Fluid losses: vomiting, diarrhoea, stoma output, bleeding, burns, over-diuresis.</li>
+          <li>Poor intake: confusion, dysphagia, nil by mouth, frailty.</li>
+          <li>Low effective circulating volume: sepsis, heart failure, cirrhosis, nephrotic syndrome.</li>
+          <li>Haemodynamic drugs: ACE inhibitors, ARBs, diuretics, NSAIDs, SGLT2 inhibitors, antihypertensives in a hypotensive patient.</li>
+        </ul>
+        <p class="small muted">Prolonged pre-renal injury becomes acute tubular injury. "Pre-renal" is a reason to act early, not a reason to relax.</p>
+      </div>
+    </details>
+    <details class="acc">
+      <summary><span>Intrinsic: damage to the kidney itself<small>The causes you must not miss</small></span></summary>
+      <div class="acc-body">
+        <ul>
+          <li><b>Glomerulonephritis / vasculitis:</b> rash, arthralgia, haemoptysis, sinusitis, epistaxis, hearing change, weight loss, night sweats. Visible haematuria 1–2 days after a sore throat suggests IgA nephropathy; 1–3 weeks after suggests post-infectious GN.</li>
+          <li><b>Acute interstitial nephritis:</b> new drug in the past weeks to months (PPIs, antibiotics, NSAIDs). Rash, fever and eosinophilia are often absent.</li>
+          <li><b>Myeloma:</b> bone pain, anaemia, hypercalcaemia, recurrent infection, older patient with AKI and no clear cause.</li>
+          <li><b>Rhabdomyolysis:</b> falls or long lie, crush injury, seizures, statin plus interacting drug, extreme exercise, recreational drugs.</li>
+          <li><b>Nephrotoxins:</b> aminoglycosides, vancomycin, iodinated contrast, lithium, calcineurin inhibitors, chemotherapy.</li>
+          <li><b>Thrombotic microangiopathy:</b> bloody diarrhoea (HUS), new thrombocytopenia, anaemia with fragments.</li>
+        </ul>
+      </div>
+    </details>
+    <details class="acc">
+      <summary><span>Post-renal: obstruction<small>Reversible, so always consider it</small></span></summary>
+      <div class="acc-body">
+        <ul>
+          <li>Lower urinary tract symptoms, prostatism, previous retention, palpable bladder.</li>
+          <li>Pelvic or abdominal malignancy, retroperitoneal fibrosis, renal stones, loin pain.</li>
+          <li>Drugs that cause retention: anticholinergics, opioids.</li>
+          <li>Single functioning kidney: obstruction of that one kidney causes AKI.</li>
+          <li>Anuria (no urine at all) is obstruction or a blocked catheter until proven otherwise; flush or change the catheter and scan the bladder.</li>
+        </ul>
+      </div>
+    </details>
+    <details class="acc">
+      <summary><span>Background, family and social history<small>Context that changes the plan</small></span></summary>
+      <div class="acc-body">
+        <ul>
+          <li>Risk factors listed in NICE NG148: CKD, previous AKI, diabetes, heart failure, liver disease, age 65 and over, sepsis, hypovolaemia, nephrotoxic drugs, cognitive impairment or dependence on others for fluids, contrast, urological obstruction.</li>
+          <li>Known kidney disease: CKD stage, renal clinic follow-up, dialysis, kidney transplant (call renal early).</li>
+          <li>Family history: polycystic kidney disease, Alport syndrome (with deafness), other inherited disease.</li>
+          <li>Pregnancy or recent delivery: pre-eclampsia, sepsis, haemorrhage.</li>
+          <li>Recreational drugs: cocaine (rhabdomyolysis, vasculitis with levamisole), ketamine (bladder and ureteric damage).</li>
+          <li>Frailty, baseline function and patient wishes: these shape ceilings of care, including whether dialysis is appropriate.</li>
+        </ul>
+      </div>
+    </details>
+    <details class="acc">
+      <summary><span>Symptoms of advanced kidney disease<small>Uraemia and its complications</small></span></summary>
+      <div class="acc-body">
+        <p>Fatigue, nausea, anorexia, pruritus, cramps, restless legs, breathlessness, ankle swelling, frothy urine (proteinuria), nocturia, confusion. Pleuritic chest pain with a rub can mean uraemic pericarditis, which is an indication for urgent dialysis.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="panel">
+    <h3>3 · Audit the drug chart</h3>
+    <p>Mrs D, 76, admitted with three days of diarrhoea. Creatinine 198 µmol/L (baseline 88 three months ago). BP 96/58. Decide for each drug on her chart whether to <b>hold or review</b> while she has AKI, or <b>continue</b>. Then check your answers.</p>
+    <div class="chart" id="drugChart"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn" id="drugCheck">Check my answers</button>
+      <button class="btn ghost" id="drugReset">Reset</button>
+      <span class="score" id="drugScore" aria-live="polite"></span>
+    </div>
+    <div class="callout pearl">
+      <strong>Sick day rules: "SADMANS"</strong>
+      <span>Sulfonylureas, ACE inhibitors, Diuretics, Metformin, ARBs, NSAIDs, SGLT2 inhibitors. Pause during acute dehydrating illness and restart within 24–48 hours of eating and drinking normally. Every discharge summary after AKI should say what was stopped and when to restart it.</span>
+    </div>
+    <div class="callout info">
+      <strong>Creatinine can rise without any fall in GFR</strong>
+      <span>Trimethoprim and cimetidine block tubular creatinine secretion; a large meat meal and creatine supplements add to the creatinine load. Low muscle mass (frail, older, amputee) does the opposite and hides poor function behind a "normal" creatinine.</span>
+    </div>
+  </div>
+
+  <div class="step-nav">
+    <button class="btn ghost" data-prev>← Back</button>
+    <button class="btn" data-next>Next: labs →</button>
+  </div>
+</section>
+
+<!-- ================= STEP 2: LABS ================= -->
+<section class="step" data-step="labs" data-label="Labs" hidden>
+  <div class="step-head">
+    <span class="eyebrow">Step 2 of 6</span>
+    <h2>Labs: creatinine, eGFR, staging, and what else to send</h2>
+    <p class="lede">Creatinine lags behind injury and depends on muscle mass. eGFR is only valid in a steady state. Know what each number can and cannot tell you.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>eGFR in UK practice</h3>
+      <ul>
+        <li>UK labs report eGFR using the CKD-EPI creatinine equation, and NICE NG203 advises <b>no adjustment for ethnicity</b>.</li>
+        <li><b>Not valid in AKI:</b> creatinine has not reached steady state, so eGFR overestimates function while creatinine is still rising.</li>
+        <li>Also unreliable at extremes of muscle mass, in amputees, in pregnancy and in under-18s.</li>
+        <li>NICE suggests eGFR from cystatin C to confirm or rule out CKD when eGFRcreatinine is 45–59 for 90 days or more with no proteinuria or other marker of kidney disease.</li>
+        <li>For drug dosing, check the BNF or SPC; many use creatinine clearance (Cockcroft–Gault) rather than eGFR, and this matters for narrow-margin drugs such as DOACs and aminoglycosides.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Defining AKI <span class="tag nice">NICE NG148</span> <span class="tag kdigo">KDIGO 2012</span></h3>
+      <p>Any one of:</p>
+      <ul>
+        <li>Creatinine rise of <span class="mono">≥26 µmol/L</span> within 48 hours</li>
+        <li>Creatinine rise of <span class="mono">≥50%</span> (×1.5) within the past 7 days</li>
+        <li>Urine output <span class="mono">&lt;0.5 ml/kg/h</span> for more than 6 hours</li>
+      </ul>
+      <p class="small muted">NHS lab systems flag "AKI warning stage" results using the NHS England algorithm, which compares the current result with the lowest in the last 7 days or the median of the last year.</p>
+    </div>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Stage</th><th>Creatinine</th><th>Urine output</th></tr></thead>
+      <tbody>
+        <tr><td><b>1</b></td><td>1.5–1.9 × baseline, or rise ≥26 µmol/L in 48 h</td><td>&lt;0.5 ml/kg/h for 6–12 h</td></tr>
+        <tr><td><b>2</b></td><td>2.0–2.9 × baseline</td><td>&lt;0.5 ml/kg/h for ≥12 h</td></tr>
+        <tr><td><b>3</b></td><td>≥3.0 × baseline, or ≥354 µmol/L with an acute rise, or started on renal replacement therapy</td><td>&lt;0.3 ml/kg/h for ≥24 h, or anuria for ≥12 h</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel">
+    <h3>Try it: AKI stage calculator</h3>
+    <p class="small muted">Pre-filled with Mrs D from step 1. Change the numbers to test yourself. For teaching only; the stage is the higher of the creatinine and urine output criteria.</p>
+    <div class="fields">
+      <div class="field"><label for="akiBase">Baseline creatinine (µmol/L)</label><input id="akiBase" type="number" inputmode="numeric" min="10" max="2000" value="88"></div>
+      <div class="field"><label for="akiNow">Current creatinine (µmol/L)</label><input id="akiNow" type="number" inputmode="numeric" min="10" max="2000" value="198"></div>
+      <div class="field"><label for="akiWin">When was the baseline?</label>
+        <select id="akiWin">
+          <option value="48">Within the last 48 hours</option>
+          <option value="7" selected>Within the last 7 days</option>
+          <option value="365">8–365 days ago (presumed baseline)</option>
+        </select></div>
+      <div class="field"><label for="akiUo">Urine output</label>
+        <select id="akiUo">
+          <option value="0" selected>Normal or not measured</option>
+          <option value="1">&lt;0.5 ml/kg/h for 6–12 h</option>
+          <option value="2">&lt;0.5 ml/kg/h for ≥12 h</option>
+          <option value="3">&lt;0.3 ml/kg/h ≥24 h, or anuria ≥12 h</option>
+        </select></div>
+    </div>
+    <div class="result" id="akiOut" aria-live="polite"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Classifying CKD: the G and A grid <span class="tag kdigo">KDIGO 2024</span> <span class="tag nice">NICE NG203</span></h3>
+    <p>CKD means abnormal kidney structure or function present for <b>more than 3 months</b>: eGFR &lt;60, or ACR ≥3 mg/mmol, or other markers such as haematuria of renal origin or structural abnormality. Always report both letters, for example "CKD G3b A2". Tap a cell.</p>
+    <div class="tbl-wrap" style="padding:10px;border:0;background:transparent">
+      <div class="heat" id="heat" role="group" aria-label="CKD risk grid"></div>
+    </div>
+    <div class="result" id="heatOut" aria-live="polite"></div>
+  </div>
+
+  <div>
+    <h3 style="margin-bottom:10px">The rest of the bloods</h3>
+    <details class="acc" open>
+      <summary><span>On every patient with AKI or advanced CKD</span></summary>
+      <div class="acc-body">
+        <ul>
+          <li><b>Potassium.</b> UK Kidney Association grading: mild 5.5–5.9, moderate 6.0–6.4, severe ≥6.5 mmol/L. Severe hyperkalaemia or any ECG change is an emergency; follow your trust's hyperkalaemia algorithm.</li>
+          <li><b>Venous gas: pH and bicarbonate.</b> Metabolic acidosis is common; severe or worsening acidosis despite treatment is an indication to discuss dialysis.</li>
+          <li><b>Urea.</b> Rises out of proportion to creatinine with dehydration, upper GI bleeding, steroids and catabolism. Use it as context, not as a measure of GFR.</li>
+          <li><b>Full blood count.</b> Anaemia points towards chronicity or myeloma; low platelets with anaemia raise TMA; neutrophilia suggests sepsis; eosinophilia raises interstitial nephritis or cholesterol emboli.</li>
+          <li><b>Calcium, phosphate, albumin, CRP.</b> High calcium suggests myeloma or sarcoid; very high phosphate suggests tumour lysis, rhabdomyolysis or chronic disease.</li>
+          <li><b>CK</b> if there is any reason to think of rhabdomyolysis.</li>
+        </ul>
+      </div>
+    </details>
+    <details class="acc">
+      <summary><span>AKI with no obvious cause: the "renal screen"<small>Send before you call renal; it is the first thing they will ask for</small></span></summary>
+      <div class="acc-body">
+        <ul>
+          <li>Urine dipstick (before a catheter if possible) and urine ACR or PCR.</li>
+          <li>ANCA (MPO and PR3), anti-GBM antibodies, ANA, complement C3 and C4.</li>
+          <li>Serum free light chains and serum protein electrophoresis; immunoglobulins.</li>
+          <li>Hepatitis B, hepatitis C and HIV serology where relevant, and before any immunosuppression.</li>
+          <li>If TMA is possible: blood film for fragments, LDH, haptoglobin, reticulocytes, and stool culture if there is bloody diarrhoea.</li>
+          <li>Renal tract ultrasound (see referral step for timing).</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <div class="step-nav">
+    <button class="btn ghost" data-prev>← Back</button>
+    <button class="btn" data-next>Next: volume status →</button>
+  </div>
+</section>
+
+<!-- ================= STEP 3: VOLUME ================= -->
+<section class="step" data-step="volume" data-label="Volume" hidden>
+  <div class="step-head">
+    <span class="eyebrow">Step 3 of 6</span>
+    <h2>Volume status: no single sign will tell you</h2>
+    <p class="lede">You are really asking two questions. Is the circulation under-filled, and would more fluid help? Is there too much fluid in the wrong place? A patient can be oedematous and intravascularly depleted at the same time.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>Build the picture from</h3>
+      <ul>
+        <li><b>Trends:</b> heart rate, blood pressure (and postural BP if safe), NEWS2, daily weights, fluid balance, urine output.</li>
+        <li><b>Perfusion:</b> capillary refill, peripheral temperature, mental state, lactate.</li>
+        <li><b>Venous pressure:</b> JVP at 45°, hepatojugular reflux.</li>
+        <li><b>Extravascular fluid:</b> lung crackles, pleural effusions, sacral and leg oedema, ascites.</li>
+        <li><b>Response to a challenge:</b> passive leg raise, or a fluid bolus with reassessment.</li>
+        <li>Bedside ultrasound (lung B-lines, IVC) is useful in trained hands; interpret with the rest of the picture.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>IV fluids: the 5 Rs <span class="tag nice">NICE CG174</span></h3>
+      <ul>
+        <li><b>Resuscitation:</b> if the patient needs it, give a 500 ml bolus of crystalloid with sodium 130–154 mmol/L over less than 15 minutes, then reassess.</li>
+        <li><b>Routine maintenance:</b> 25–30 ml/kg/day water, about 1 mmol/kg/day each of sodium, potassium and chloride, and 50–100 g/day glucose. Consider less (20–25 ml/kg/day) in older or frail patients, heart failure and kidney impairment.</li>
+        <li><b>Replacement</b> of ongoing losses, matched to what is being lost.</li>
+        <li><b>Redistribution:</b> oedema, sepsis, hypoalbuminaemia, post-op.</li>
+        <li><b>Reassessment:</b> every fluid prescription needs a plan for review.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Try it: what does each finding tell you?</h3>
+    <p>For each finding, choose what it points to on its own. Feedback appears as you go.</p>
+    <div class="sorter" id="sorter"></div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span class="score" id="sortScore" aria-live="polite"></span>
+      <button class="btn ghost" id="sortReset">Reset</button>
+    </div>
+  </div>
+
+  <div class="step-nav">
+    <button class="btn ghost" data-prev>← Back</button>
+    <button class="btn" data-next>Next: urinalysis →</button>
+  </div>
+</section>
+
+<!-- ================= STEP 4: URINALYSIS ================= -->
+<section class="step" data-step="urine" data-label="Urinalysis" hidden>
+  <div class="step-head">
+    <span class="eyebrow">Step 4 of 6</span>
+    <h2>Urinalysis: the cheapest renal investigation</h2>
+    <p class="lede">NICE NG148 asks for a urine dipstick in everyone with suspected or confirmed AKI. Dip it early, ideally before a catheter goes in, because catheter trauma causes haematuria and muddies the picture.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Explore the dipstick</h3>
+    <p class="small muted">Tap each pad for what it detects, its pitfalls, and what it means in kidney patients.</p>
+    <div class="dip">
+      <div class="stick" id="stick" role="group" aria-label="Dipstick pads"></div>
+      <div class="dip-card" id="dipCard" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="callout red">
+    <strong>Blood and protein on the dipstick + AKI, without a clear urinary infection</strong>
+    <span>Think glomerulonephritis or vasculitis. Send the renal screen and urine ACR or PCR, check the blood pressure, and discuss with renal the same day. Rapidly progressive GN can destroy kidney function within days.</span>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>Quantifying protein</h3>
+      <ul>
+        <li><b>Urine ACR</b> (albumin:creatinine ratio) is the test NICE recommends for detecting and monitoring CKD. A dipstick is not good enough for this.</li>
+        <li>ACR categories: <span class="mono">A1 &lt;3</span>, <span class="mono">A2 3–30</span>, <span class="mono">A3 &gt;30 mg/mmol</span>. An ACR of 3 or more is clinically significant; confirm a first result between 3 and 70 on an early-morning sample.</li>
+        <li><b>Urine PCR</b> (protein:creatinine ratio) measures total protein. It is used in many renal units to monitor known glomerular disease.</li>
+        <li>A dipstick and ACR mainly detect albumin. They miss light chains, so if you suspect myeloma send serum free light chains and protein electrophoresis instead.</li>
+        <li>Nephrotic syndrome: heavy proteinuria, hypoalbuminaemia and oedema. It needs prompt renal discussion and thought about VTE risk.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Haematuria in practice <span class="tag ukka">UKKA</span></h3>
+      <ul>
+        <li>Significant haematuria is <b>1+ or more</b> on dipstick. Trace is not significant. Microscopy is not needed to confirm a positive dipstick.</li>
+        <li>Exclude transient causes first: UTI, menstruation, vigorous exercise, recent catheterisation.</li>
+        <li>Persistent non-visible haematuria means 2 of 3 dipsticks positive.</li>
+        <li>For all persistent haematuria: check BP, eGFR and urine ACR. These decide between urology and nephrology.</li>
+        <li><b>Urology, suspected cancer pathway</b> <span class="tag nice">NG12</span>: age 45 and over with unexplained visible haematuria (no UTI, or persisting after UTI treated); age 60 and over with unexplained non-visible haematuria plus dysuria or a raised white cell count.</li>
+        <li><b>Nephrology:</b> haematuria with ACR ≥30, falling eGFR, or hypertension in a younger patient; visible haematuria during an upper respiratory infection.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Urine microscopy: what the sediment tells you</h3>
+    <div class="casts">
+      <div><b>Red cell casts, dysmorphic red cells</b>Glomerular bleeding: glomerulonephritis or vasculitis.</div>
+      <div><b>Muddy brown granular casts</b>Acute tubular necrosis.</div>
+      <div><b>White cell casts</b>Pyelonephritis or interstitial nephritis.</div>
+      <div><b>Sterile pyuria</b>White cells without growth: partially treated UTI, interstitial nephritis, stones, TB.</div>
+      <div><b>Hyaline casts</b>Non-specific; seen in concentrated urine and pre-renal states.</div>
+      <div><b>Crystals</b>Urate in tumour lysis; oxalate in ethylene glycol poisoning; some drugs.</div>
+    </div>
+  </div>
+
+  <div class="step-nav">
+    <button class="btn ghost" data-prev>← Back</button>
+    <button class="btn" data-next>Next: referral →</button>
+  </div>
+</section>
+
+<!-- ================= STEP 5: REFERRAL ================= -->
+<section class="step" data-step="referral" data-label="Referral" hidden>
+  <div class="step-head">
+    <span class="eyebrow">Step 5 of 6</span>
+    <h2>Referral: who, how fast, and what to say</h2>
+    <p class="lede">Most AKI is managed by the admitting team. The skill is spotting the patients who need a renal or urology opinion today, and making the call useful.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="panel">
+      <h3>Imaging the renal tract <span class="tag nice">NG148</span></h3>
+      <ul>
+        <li>Do not routinely scan when a cause of AKI has been found.</li>
+        <li>Scan within <b>24 hours</b> if there is no identified cause, or if obstruction is suspected.</li>
+        <li>Scan within <b>6 hours</b> if pyonephrosis (infected, obstructed kidney) is suspected.</li>
+        <li>Urology immediately for pyonephrosis, an obstructed solitary kidney, bilateral upper tract obstruction, or complications of obstruction. Nephrostomy or stenting should happen as soon as possible and within 12 hours of diagnosis.</li>
+      </ul>
+    </div>
+    <div class="panel">
+      <h3>Indications to discuss dialysis now</h3>
+      <ul>
+        <li>Hyperkalaemia not responding to medical treatment.</li>
+        <li>Metabolic acidosis that is severe or worsening.</li>
+        <li>Fluid overload or pulmonary oedema not responding to diuretics.</li>
+        <li>Uraemic complications: pericarditis, encephalopathy, bleeding.</li>
+        <li>Dialysable poisons (for example lithium, metformin, ethylene glycol).</li>
+      </ul>
+      <p class="small muted">Involve critical care as well as renal for an unstable patient. Agree and document ceilings of care early.</p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Making the call (SBAR)</h3>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Have ready</th><th>Why they ask</th></tr></thead>
+        <tbody>
+          <tr><td>Age, background, baseline creatinine with date, known CKD stage</td><td>Acute, chronic or acute-on-chronic</td></tr>
+          <tr><td>Creatinine and potassium trend, bicarbonate/pH, Hb</td><td>Speed and severity; dialysis indications</td></tr>
+          <tr><td>Urine output, fluid balance, weight, your volume assessment</td><td>Pre-renal versus established injury; overload</td></tr>
+          <tr><td>Dipstick result (pre-catheter), ACR or PCR</td><td>Screens for glomerular disease</td></tr>
+          <tr><td>Drugs stopped, contrast or nephrotoxins given</td><td>Removable causes</td></tr>
+          <tr><td>Ultrasound result or when it is booked</td><td>Excludes obstruction; kidney size</td></tr>
+          <tr><td>Renal screen sent; observations and NEWS2; ceiling of care</td><td>Next steps and suitability for dialysis</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout pearl">
+      <strong>One sentence first</strong>
+      <span>"I'm calling about a 34-year-old with AKI, creatinine 310 with no baseline, blood 3+ and protein 3+ on dipstick and a BP of 170/100. I'm worried about a glomerulonephritis and would like your advice today." Then give the detail.</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>CKD referral from clinic or the ward <span class="tag nice">NICE NG203</span></h3>
+    <p>Refer adults with CKD for specialist assessment if they have any of:</p>
+    <ul>
+      <li>A 5-year risk of needing renal replacement therapy greater than 5%, using the 4-variable Kidney Failure Risk Equation (age, sex, eGFR, ACR). Use a validated calculator such as <a href="https://kidneyfailurerisk.com" target="_blank" rel="noopener">kidneyfailurerisk.com</a>.</li>
+      <li>ACR of 70 mg/mmol or more, unless known to be caused by diabetes and already appropriately treated.</li>
+      <li>ACR of 30 mg/mmol or more (A3) together with haematuria.</li>
+      <li>A sustained fall in eGFR of 25% or more with a change in eGFR category within 12 months.</li>
+      <li>A sustained fall in eGFR of 15 ml/min/1.73 m² or more per year.</li>
+      <li>Hypertension poorly controlled despite at least 4 antihypertensives at therapeutic doses.</li>
+      <li>Known or suspected rare or genetic causes of CKD, or suspected renal artery stenosis.</li>
+    </ul>
+    <p class="small muted">eGFR below 30 (G4–G5) usually warrants referral too, taking the person's wishes and comorbidities into account.</p>
+  </div>
+
+  <div class="step-nav">
+    <button class="btn ghost" data-prev>← Back</button>
+    <button class="btn" data-next>Next: cases →</button>
+  </div>
+</section>
+
+<!-- ================= STEP 6: CASES ================= -->
+<section class="step" data-step="cases" data-label="Cases" hidden>
+  <div class="step-head">
+    <span class="eyebrow">Step 6 of 6</span>
+    <h2>Check yourself: four ward cases</h2>
+    <p class="lede">Choose an answer to see the explanation. Bring any you got wrong, or disagree with, to the session.</p>
+  </div>
+  <div id="cases" style="display:flex;flex-direction:column;gap:var(--s4)"></div>
+  <div class="panel" id="caseSummary">
+    <h3>Your score</h3>
+    <p class="score" id="caseScore">0 of 4 answered</p>
+  </div>
+
+  <div class="panel">
+    <h3>Key messages to take to the session</h3>
+    <ol>
+      <li>Find the baseline before you label anything as AKI or CKD.</li>
+      <li>Sort every creatinine rise into pre-renal, intrinsic and post-renal, and audit the drug chart on day one.</li>
+      <li>eGFR is meaningless while creatinine is changing; stage AKI with creatinine and urine output.</li>
+      <li>Volume status is a synthesis of trends and signs. Reassess after every intervention.</li>
+      <li>Dip the urine early. Blood plus protein with AKI is a same-day renal conversation.</li>
+      <li>Call with a one-line summary, the baseline, the trend, the dipstick and the potassium.</li>
+    </ol>
+  </div>
+
+  <div class="panel">
+    <h3>Sources and further reading</h3>
+    <ul class="refs">
+      <li><a href="https://www.nice.org.uk/guidance/ng148" target="_blank" rel="noopener">NICE NG148: Acute kidney injury: prevention, detection and management</a> (updated October 2024)</li>
+      <li><a href="https://www.nice.org.uk/guidance/ng203" target="_blank" rel="noopener">NICE NG203: Chronic kidney disease: assessment and management</a></li>
+      <li><a href="https://www.nice.org.uk/guidance/cg174" target="_blank" rel="noopener">NICE CG174: Intravenous fluid therapy in hospital</a></li>
+      <li><a href="https://www.nice.org.uk/guidance/ng12" target="_blank" rel="noopener">NICE NG12: Suspected cancer: recognition and referral</a></li>
+      <li><a href="https://kdigo.org/guidelines/ckd-evaluation-and-management/" target="_blank" rel="noopener">KDIGO 2024 Clinical Practice Guideline for CKD</a></li>
+      <li><a href="https://kdigo.org/guidelines/acute-kidney-injury/" target="_blank" rel="noopener">KDIGO AKI guideline (2012) and the 2026 AKI/AKD draft</a></li>
+      <li><a href="https://ukkidney.org/health-professionals/guidelines" target="_blank" rel="noopener">UK Kidney Association guidelines</a> (including hyperkalaemia and the UK eCKD guide)</li>
+      <li><a href="https://www.thinkkidneys.nhs.uk" target="_blank" rel="noopener">Think Kidneys</a>: AKI resources and patient sick day guidance</li>
+    </ul>
+  </div>
+
+  <div class="step-nav">
+    <button class="btn ghost" data-prev>← Back</button>
+    <button class="btn ghost" id="restart">Back to the start</button>
+  </div>
+</section>
+
+</main>
+
+
+<script>
+(function(){
+  "use strict";
+  var store = {
+    get:function(k){try{return JSON.parse(localStorage.getItem(k));}catch(e){return null;}},
+    set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+  };
+  var $ = function(s,el){return (el||document).querySelector(s);};
+  var $$ = function(s,el){return Array.prototype.slice.call((el||document).querySelectorAll(s));};
+  function h(tag,attrs,html){var e=document.createElement(tag);if(attrs){for(var k in attrs){if(k==="class")e.className=attrs[k];else e.setAttribute(k,attrs[k]);}}if(html!=null)e.innerHTML=html;return e;}
+
+  /* ---------------- stepper ---------------- */
+  var steps = $$(".step");
+  var strip = $("#strip");
+  var done = store.get("kp_done") || {};
+  var current = 0;
+  steps.forEach(function(s,i){
+    var b = h("button",{class:"pad","data-c":String(i),type:"button"},"<i></i>"+s.dataset.label);
+    b.addEventListener("click",function(){go(i);});
+    strip.appendChild(b);
+  });
+  var route = $("#route");
+  var routeDesc = ["","Baseline, localising the cause, drug chart audit","eGFR, AKI staging calculator, CKD grid","Bedside signs, 5 Rs, signs quiz","Dipstick explorer, ACR, haematuria","Imaging, dialysis indications, SBAR, CKD criteria","Four ward cases with answers"];
+  steps.forEach(function(s,i){
+    if(i===0)return;
+    var b=h("button",{type:"button"},"<b>"+i+" · "+s.dataset.label+"</b><span>"+routeDesc[i]+"</span>");
+    b.addEventListener("click",function(){go(i);});
+    route.appendChild(b);
+  });
+  function paint(){
+    var pads=$$(".pad",strip);
+    pads.forEach(function(p,i){
+      p.classList.toggle("done",!!done[i]);
+      if(i===current)p.setAttribute("aria-current","step");else p.removeAttribute("aria-current");
+    });
+    var n=Object.keys(done).filter(function(k){return done[k];}).length;
+    $("#barFill").style.width=Math.round(n/steps.length*100)+"%";
+    $("#count").textContent=current===0?"Overview":"Step "+current+" of "+(steps.length-1);
+  }
+  function go(i,noScroll){
+    if(i<0||i>=steps.length)return;
+    done[current]=true; store.set("kp_done",done);
+    steps.forEach(function(s,j){s.hidden=j!==i;});
+    current=i; paint();
+    try{history.replaceState(null,"","#"+steps[i].dataset.step);}catch(e){}
+    var pad=$$(".pad",strip)[i];
+    if(pad&&pad.scrollIntoView){try{pad.scrollIntoView({block:"nearest",inline:"center"});}catch(e){}}
+    if(!noScroll)window.scrollTo(0,0);
+  }
+  $$("[data-next]").forEach(function(b){b.addEventListener("click",function(){go(current+1);});});
+  $$("[data-prev]").forEach(function(b){b.addEventListener("click",function(){go(current-1);});});
+  $("#restart").addEventListener("click",function(){go(0);});
+  var startHash=(location.hash||"").replace("#","");
+  var startIdx=0; steps.forEach(function(s,i){if(s.dataset.step===startHash)startIdx=i;});
+  steps.forEach(function(s,j){s.hidden=j!==startIdx;}); current=startIdx; paint();
+
+  /* ---------------- drug chart ---------------- */
+  var drugs=[
+    {n:"Ramipril",d:"5 mg OD",a:"hold",w:"Hold. ACE inhibitors reduce efferent arteriolar tone and glomerular pressure; in hypovolaemia this worsens AKI and raises potassium."},
+    {n:"Furosemide",d:"40 mg OM",a:"hold",w:"Hold. She is volume depleted. Restart when euvolaemic, and review the dose if she is fluid overloaded later."},
+    {n:"Metformin",d:"1 g BD",a:"hold",w:"Hold. Risk of lactic acidosis when kidney function is falling and the patient is unwell."},
+    {n:"Dapagliflozin",d:"10 mg OD",a:"hold",w:"Hold during acute illness (sick day rules). Volume depletion and risk of euglycaemic ketoacidosis."},
+    {n:"Ibuprofen",d:"400 mg TDS PRN",a:"hold",w:"Stop. NSAIDs constrict the afferent arteriole and can cause interstitial nephritis."},
+    {n:"Trimethoprim",d:"200 mg BD (UTI)",a:"hold",w:"Review. It raises creatinine by blocking secretion and raises potassium. Choose an alternative antibiotic if possible."},
+    {n:"Atorvastatin",d:"20 mg ON",a:"cont",w:"Continue. No dose change needed in AKI. Stop only if rhabdomyolysis is suspected."},
+    {n:"Paracetamol",d:"1 g QDS",a:"cont",w:"Continue as the analgesic of choice. Reduce the dose if she weighs under 50 kg or has liver risk factors."},
+    {n:"Omeprazole",d:"20 mg OD",a:"cont",w:"Usually continue. But PPIs are a common cause of interstitial nephritis, so revisit if no other cause is found."}
+  ];
+  var drugAns={};
+  var chart=$("#drugChart");
+  function renderDrugs(show){
+    chart.innerHTML="";
+    var right=0;
+    drugs.forEach(function(dr,i){
+      var row=h("div",{class:"chart-row"});
+      row.appendChild(h("div",null,'<div class="dname">'+dr.n+'</div><div class="ddose">'+dr.d+'</div>'));
+      var t=h("div",{class:"toggle",role:"group","aria-label":"Decision for "+dr.n});
+      [["hold","Hold / review"],["cont","Continue"]].forEach(function(o){
+        var b=h("button",{type:"button","aria-pressed":String(drugAns[i]===o[0])},o[1]);
+        b.addEventListener("click",function(){drugAns[i]=o[0];renderDrugs(show);});
+        t.appendChild(b);
+      });
+      row.appendChild(t);
+      if(show){
+        var ok=drugAns[i]===dr.a; if(ok)right++;
+        row.appendChild(h("div",{class:"why "+(ok?"right":"wrong")},(ok?"<b>Correct.</b> ":(drugAns[i]?"<b>Not quite.</b> ":"<b>Not answered.</b> "))+dr.w));
+      }
+      chart.appendChild(row);
+    });
+    $("#drugScore").textContent=show?right+" of "+drugs.length+" correct":"";
+  }
+  var drugShow=false;
+  renderDrugs(false);
+  $("#drugCheck").addEventListener("click",function(){drugShow=true;renderDrugs(true);});
+  $("#drugReset").addEventListener("click",function(){drugAns={};drugShow=false;renderDrugs(false);});
+
+  /* ---------------- AKI calculator ---------------- */
+  function akiCalc(){
+    var b=parseFloat($("#akiBase").value), c=parseFloat($("#akiNow").value);
+    var win=$("#akiWin").value, uo=parseInt($("#akiUo").value,10);
+    var out=$("#akiOut");
+    if(!(b>0)||!(c>0)){out.className="result";out.innerHTML="<span>Enter both creatinine values.</span>";return;}
+    var ratio=c/b, rise=c-b, cs=0, why=[];
+    if(ratio>=3){cs=3;why.push("ratio ≥3.0");}
+    else if(c>=354&&(ratio>=1.5||(win==="48"&&rise>=26))){cs=3;why.push("creatinine ≥354 µmol/L with an acute rise");}
+    else if(ratio>=2){cs=2;why.push("ratio 2.0–2.9");}
+    else if(ratio>=1.5){cs=1;why.push("ratio 1.5–1.9");}
+    else if(win==="48"&&rise>=26){cs=1;why.push("rise ≥26 µmol/L within 48 h");}
+    var stage=Math.max(cs,uo);
+    if(uo>0)why.push("urine output criteria stage "+uo);
+    var head=stage===0?"Does not meet AKI criteria":"AKI stage "+stage;
+    var msg=[];
+    msg.push('<span class="mono small">Ratio '+ratio.toFixed(2)+' × baseline · change '+(rise>=0?"+":"")+Math.round(rise)+' µmol/L</span>');
+    if(why.length)msg.push("<span>Based on: "+why.join("; ")+".</span>");
+    if(win==="365")msg.push('<span class="small">Baseline older than 7 days is a presumed baseline. Consider whether this is slowly progressive CKD or acute kidney disease rather than AKI.</span>');
+    if(stage===0&&win!=="48"&&rise>=26)msg.push('<span class="small">A rise of ≥26 µmol/L counts only if it happened within 48 hours.</span>');
+    if(stage===3)msg.push("<span><b>Stage 3: NICE NG148 advises discussing with nephrology.</b></span>");
+    else if(stage>=1)msg.push("<span>Assess volume, review drugs, dip the urine, and repeat creatinine within 24 hours.</span>");
+    out.className="result s"+stage;
+    out.innerHTML='<span class="big">'+head+"</span>"+msg.join("");
+  }
+  ["#akiBase","#akiNow","#akiWin","#akiUo"].forEach(function(s){$(s).addEventListener("input",akiCalc);$(s).addEventListener("change",akiCalc);});
+  akiCalc();
+
+  /* ---------------- CKD heatmap ---------------- */
+  var G=[["G1","≥90"],["G2","60–89"],["G3a","45–59"],["G3b","30–44"],["G4","15–29"],["G5","<15"]];
+  var A=[["A1","<3"],["A2","3–30"],["A3",">30"]];
+  var risk=[["g","y","o"],["g","y","o"],["y","o","r"],["o","r","r"],["r","r","r"],["d","d","d"]];
+  var riskName={g:"Low risk",y:"Moderately increased risk",o:"High risk",r:"Very high risk",d:"Very high risk"};
+  var heat=$("#heat");
+  heat.appendChild(h("div",{class:"hdr"},"eGFR ml/min/1.73m²"));
+  A.forEach(function(a){heat.appendChild(h("div",{class:"hdr"},"<b>"+a[0]+"</b>"+a[1]+" mg/mmol"));});
+  var sel=[3,1];
+  G.forEach(function(g,gi){
+    heat.appendChild(h("div",{class:"rowh"},"<b>"+g[0]+"</b>"+g[1]));
+    A.forEach(function(a,ai){
+      var b=h("button",{type:"button",class:"c-"+risk[gi][ai],"aria-pressed":"false","aria-label":g[0]+" "+a[0]},g[0]+a[0]);
+      b.addEventListener("click",function(){sel=[gi,ai];heatPaint();});
+      heat.appendChild(b);
+    });
+  });
+  function heatPaint(){
+    var gi=sel[0],ai=sel[1];
+    $$("button",heat).forEach(function(b,i){b.setAttribute("aria-pressed",String(Math.floor(i/3)===gi&&i%3===ai));});
+    var r=risk[gi][ai], notes=[];
+    if(gi<=1&&ai===0)notes.push("Not CKD unless there is another marker of kidney damage (structural abnormality, haematuria of renal origin, biopsy findings, kidney transplant).");
+    if(gi===1&&ai===0)notes.push("An eGFR of 60–89 on its own is common with age and is not CKD.");
+    if(ai>=1)notes.push("Offer an ACE inhibitor or ARB where indicated, and consider an SGLT2 inhibitor in line with NICE and KDIGO criteria.");
+    if(ai===2)notes.push("Refer if ACR ≥70 mg/mmol (unless due to diabetes and already treated), or ACR ≥30 with haematuria.");
+    if(gi>=4)notes.push("eGFR below 30: usually refer. Check the KFRE 5-year risk; plan for advanced kidney care discussions.");
+    if(gi===5)notes.push("G5: kidney failure. Discuss dialysis, transplant or conservative care pathways.");
+    if(gi>=2&&gi<=3)notes.push("Calculate the 4-variable KFRE; refer if the 5-year risk is above 5%. Monitor eGFR and ACR at least annually, more often with higher risk.");
+    notes.push("Cardiovascular risk rises across the grid: offer atorvastatin 20 mg for primary prevention in CKD (NICE).");
+    var out=$("#heatOut");
+    out.className="result "+({g:"s0",y:"s1",o:"s2",r:"s3",d:"s3"})[r];
+    out.innerHTML='<span class="big">'+G[gi][0]+" "+A[ai][0]+" · "+riskName[r]+'</span><ul class="small">'+notes.map(function(n){return"<li>"+n+"</li>";}).join("")+"</ul>";
+  }
+  heatPaint();
+
+  /* ---------------- volume sorter ---------------- */
+  var labels={dry:"Under-filled",wet:"Overloaded",unr:"Unreliable alone"};
+  var items=[
+    {f:"Systolic BP falls by 25 mmHg on standing",ok:["dry"],w:"A postural drop with symptoms points to intravascular depletion. Autonomic neuropathy and antihypertensives can cause it too."},
+    {f:"JVP 6 cm above the sternal angle",ok:["wet"],w:"A raised JVP suggests high right-sided filling pressure. Remember tricuspid regurgitation, PE and tamponade can raise it without overload."},
+    {f:"Capillary refill 4 seconds, cool peripheries",ok:["dry"],w:"Poor peripheral perfusion. Fits hypovolaemia, but cardiogenic shock looks the same, so check the JVP and lungs."},
+    {f:"Weight up 3 kg over 48 hours",ok:["wet"],w:"Short-term weight change is mostly fluid. Daily weights on the same scales are one of the most useful measures."},
+    {f:"Pitting oedema to both knees",ok:["unr","wet"],best:"unr",w:"Oedema means excess extracellular fluid, but the circulation can still be under-filled (low albumin, sepsis, calcium channel blockers). Don't give diuretics on oedema alone."},
+    {f:"Dry mucous membranes",ok:["unr"],w:"Mouth breathing and oxygen therapy dry the mouth. Poor discriminator in older patients."},
+    {f:"Urine output 15 ml/h for 6 hours",ok:["unr"],w:"Oliguria happens in hypovolaemia, established tubular injury, obstruction and heart failure. It tells you something is wrong, not what."},
+    {f:"Urea 24, creatinine 120 µmol/L",ok:["unr"],w:"A high urea:creatinine ratio can reflect dehydration, but also upper GI bleeding, steroids or high protein intake."},
+    {f:"Bilateral fine crackles at both bases",ok:["wet"],w:"Fits pulmonary oedema in context, but crackles also come from infection, fibrosis and atelectasis. Look for other supporting signs."},
+    {f:"BP and pulse pressure rise during a passive leg raise",ok:["dry"],w:"Suggests fluid responsiveness. Being fluid-responsive does not always mean the patient needs fluid; consider the whole picture."}
+  ];
+  var sortAns={};
+  var sorter=$("#sorter");
+  function renderSort(){
+    sorter.innerHTML="";var right=0,answered=0;
+    items.forEach(function(it,i){
+      var box=h("div",{class:"sort-item"});
+      box.appendChild(h("div",{class:"finding"},it.f));
+      var ch=h("div",{class:"choices",role:"group","aria-label":"Interpretation"});
+      Object.keys(labels).forEach(function(k){
+        var b=h("button",{type:"button"},labels[k]);
+        var picked=sortAns[i];
+        if(picked){
+          if(k===picked){b.classList.add("picked",it.ok.indexOf(k)>-1?"ok":"no");}
+          else if(it.ok.indexOf(picked)===-1&&k===(it.best||it.ok[0]))b.classList.add("answer");
+        }
+        b.addEventListener("click",function(){sortAns[i]=k;renderSort();});
+        ch.appendChild(b);
+      });
+      box.appendChild(ch);
+      if(sortAns[i]){
+        answered++;
+        var ok=it.ok.indexOf(sortAns[i])>-1; if(ok)right++;
+        var pre=ok?(it.best&&sortAns[i]!==it.best?"<b>Partly right.</b> ":"<b>Yes.</b> "):"<b>Not on its own.</b> ";
+        box.appendChild(h("div",{class:"fb "+(ok?"ok":"no")},pre+it.w));
+      }
+      sorter.appendChild(box);
+    });
+    $("#sortScore").textContent=answered?right+" of "+answered+" answered correctly ("+(items.length-answered)+" left)":items.length+" findings to sort";
+  }
+  renderSort();
+  $("#sortReset").addEventListener("click",function(){sortAns={};renderSort();});
+
+  /* ---------------- dipstick ---------------- */
+  var pads=[
+    {n:"Leukocytes",c:"#C9B4D6",det:"Leukocyte esterase from white cells.",pit:"Contamination from vaginal or skin flora; sterile pyuria; not reliable for diagnosing UTI in people aged 65 and over (UKHSA guidance: diagnose on symptoms, send a culture).",ren:"Persistent sterile pyuria suggests interstitial nephritis, stones, partially treated infection or TB."},
+    {n:"Nitrite",c:"#F2C6D0",det:"Gram-negative bacteria converting nitrate to nitrite.",pit:"Needs urine in the bladder for about 4 hours. Negative with enterococci and some other organisms, and with dilute urine.",ren:"Positive nitrite with AKI and loin pain: think pyelonephritis, and pyonephrosis if obstructed."},
+    {n:"Protein",c:"#A9D4B8",det:"Mainly albumin. Insensitive below about 300 mg/L.",pit:"Concentration-dependent; misses light chains (myeloma); false positives with very alkaline urine.",ren:"Quantify with urine ACR (or PCR). Protein plus blood with AKI suggests glomerular disease."},
+    {n:"Blood",c:"#E3B055",det:"Haem peroxidase activity: red cells, free haemoglobin and myoglobin.",pit:"Menstruation, exercise, catheter trauma, UTI. Trace is not significant; 1+ or more is.",ren:"Strongly positive blood with few red cells on microscopy suggests myoglobin (rhabdomyolysis) or haemolysis; check CK."},
+    {n:"Glucose",c:"#7FB8B0",det:"Glucose above the renal threshold (about 10 mmol/L in blood).",pit:"Expected and harmless in people taking SGLT2 inhibitors.",ren:"Glycosuria with a normal blood glucose (and no SGLT2 inhibitor) suggests proximal tubular dysfunction, such as Fanconi syndrome or myeloma."},
+    {n:"Ketones",c:"#C59AB8",det:"Acetoacetate.",pit:"Positive with fasting, vomiting and low-carbohydrate diets.",ren:"Check blood ketones and a gas in anyone on an SGLT2 inhibitor who is unwell: euglycaemic DKA."},
+    {n:"pH",c:"#E8A267",det:"Urine acidity, usually 5–7.",pit:"Changes after standing; bacteria that split urea (Proteus) make urine alkaline.",ren:"Urine pH above 5.5 in the presence of systemic metabolic acidosis suggests a distal renal tubular acidosis."},
+    {n:"Specific gravity",c:"#5C8FA8",det:"Urine concentration.",pit:"Raised by glucose, contrast and protein. A dipstick SG is a rough estimate.",ren:"Concentrated urine fits a pre-renal state; fixed SG around 1.010 suggests the kidney cannot concentrate (tubular injury, advanced CKD)."}
+  ];
+  var stick=$("#stick"), dipCard=$("#dipCard"), dipSel=3;
+  pads.forEach(function(p,i){
+    var b=h("button",{type:"button","aria-pressed":"false"},'<i style="background:'+p.c+'"></i>'+p.n);
+    b.addEventListener("click",function(){dipSel=i;dipPaint();});
+    stick.appendChild(b);
+  });
+  function dipPaint(){
+    $$("button",stick).forEach(function(b,i){b.setAttribute("aria-pressed",String(i===dipSel));});
+    var p=pads[dipSel];
+    dipCard.innerHTML='<h3>'+p.n+'</h3><dl><div><dt>What it detects</dt><dd>'+p.det+'</dd></div><div><dt>Pitfalls</dt><dd>'+p.pit+'</dd></div><div><dt>In the kidney patient</dt><dd>'+p.ren+'</dd></div></dl>';
+  }
+  dipPaint();
+
+  /* ---------------- cases ---------------- */
+  var cases=[
+    {t:"Case 1 · Diarrhoea and a drug chart",v:'78-year-old woman, 3 days of diarrhoea. On ramipril, furosemide and metformin. HR 104, BP 98/60, postural drop, dry mucous membranes, JVP not visible. <span class="mono">Creatinine 214 µmol/L (baseline 92 two months ago), K⁺ 5.4, urine dipstick: trace protein only.</span>',
+     q:"What is the AKI stage, and the most appropriate first step?",
+     o:["Stage 1; repeat creatinine tomorrow","Stage 2; hold ramipril, furosemide and metformin and give a 500 ml crystalloid bolus with reassessment","Stage 3; call renal for dialysis","Stage 2; start IV furosemide to maintain urine output"],a:1,
+     e:"214 ÷ 92 = 2.3, so stage 2 (presumed baseline within the last year). She is volume depleted, so NICE CG174 resuscitation applies: 500 ml crystalloid over less than 15 minutes, then reassess. Stop the haemodynamically active drugs and metformin, monitor urine output and repeat bloods. Diuretics do not treat AKI."},
+    {t:"Case 2 · Cola-coloured urine",v:'34-year-old man with a sore throat that started 2 days ago, now passing dark cola-coloured urine. BP 168/102. <span class="mono">Creatinine 165 µmol/L (no baseline), dipstick blood 3+, protein 2+, nitrite negative.</span>',
+     q:"What is the most appropriate next step?",
+     o:["Two-week-wait urology referral for visible haematuria","Treat as a UTI and repeat the dipstick in 6 weeks","Send urine ACR or PCR and the renal screen, and discuss with renal today","Reassure: post-streptococcal GN always resolves"],a:2,
+     e:"Visible haematuria within days of a throat infection, with proteinuria, hypertension and a raised creatinine, suggests IgA nephropathy (post-infectious GN usually appears 1–3 weeks later). This is glomerular disease with impaired function, so it needs a same-day renal discussion, not a urology cancer pathway."},
+    {t:"Case 3 · Clinic letter about eGFR",v:'62-year-old man with type 2 diabetes. <span class="mono">eGFR 50 a year ago, now 37 on two samples 3 months apart. ACR 12 mg/mmol. BP 134/80 on ramipril.</span> He feels well.',
+     q:"Does he meet NICE NG203 referral criteria?",
+     o:["No: the fall is 13 ml/min, under the 15 ml/min threshold","Yes: a sustained fall of 25% or more with a change in category (G3a to G3b) within 12 months","No: ACR is under 70","Only if his KFRE is above 10%"],a:1,
+     e:"The fall is 13 ml/min, so the 15 ml/min rule is not met, but 13 ÷ 50 is a 26% fall with a move from G3a to G3b, which meets NG203. He should also be on an SGLT2 inhibitor if not contraindicated, and his KFRE should be calculated."},
+    {t:"Case 4 · Post-op and not passing urine",v:'70-year-old man, day 2 after a laparotomy. Has had 6 litres IV fluid. Urine output 10 ml/h for 14 hours (catheter flushed). Breathless, JVP raised, bibasal crackles, weight up 5 kg. <span class="mono">Creatinine 390 (baseline 110), K⁺ 6.8 with peaked T waves, pH 7.18.</span>',
+     q:"What is the priority?",
+     o:["Another fluid challenge to improve urine output","Emergency hyperkalaemia treatment, stop IV fluids, and urgent renal and critical care review for possible renal replacement therapy","Renal tract ultrasound first, then decide","Start an ACE inhibitor for renal protection"],a:1,
+     e:"Stage 3 AKI (ratio 3.5) with severe hyperkalaemia and ECG changes, acidosis and fluid overload. Give IV calcium and insulin-glucose per your trust protocol now, stop fluids, and get renal and critical care review urgently. He meets several indications for renal replacement therapy."}
+  ];
+  var caseAns={};
+  var casesEl=$("#cases");
+  function renderCases(){
+    casesEl.innerHTML="";var right=0,n=0;
+    cases.forEach(function(c,i){
+      var p=h("div",{class:"panel case"});
+      p.appendChild(h("h3",null,c.t));
+      p.appendChild(h("div",{class:"vignette"},c.v));
+      p.appendChild(h("p",null,"<b>"+c.q+"</b>"));
+      var opts=h("div",{class:"opts"});
+      c.o.forEach(function(o,j){
+        var b=h("button",{type:"button"},"<b>"+"ABCD"[j]+"</b><span>"+o+"</span>");
+        if(caseAns[i]!=null){
+          b.disabled=true;
+          if(j===c.a)b.classList.add("ok");
+          else if(j===caseAns[i])b.classList.add("no");
+        }
+        b.addEventListener("click",function(){caseAns[i]=j;renderCases();});
+        opts.appendChild(b);
+      });
+      p.appendChild(opts);
+      if(caseAns[i]!=null){
+        n++; if(caseAns[i]===c.a)right++;
+        p.appendChild(h("div",{class:"explain"},(caseAns[i]===c.a?"<b>Correct.</b> ":"<b>The best answer is "+"ABCD"[c.a]+".</b> ")+c.e));
+        var again=h("button",{type:"button",class:"btn ghost"},"Try again");
+        again.addEventListener("click",function(){delete caseAns[i];renderCases();});
+        p.appendChild(again);
+      }
+      casesEl.appendChild(p);
+    });
+    $("#caseScore").textContent=right+" correct · "+n+" of "+cases.length+" answered";
+  }
+  renderCases();
+})();
+</script>
+
+</body>
+</html>
